@@ -52,7 +52,7 @@ extern "C" {
 /** 
  * @brief spawns the http server 
  */
-void http_app_start(bool lru_purge_enable);
+void http_app_start(bool lru_purge_enable, void *user_ctx);
 
 /**
  * @brief stops the http server 

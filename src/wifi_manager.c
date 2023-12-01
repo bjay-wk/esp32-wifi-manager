@@ -173,7 +173,7 @@ void wifi_manager_disconnect_async(){
 }
 
 
-void wifi_manager_start(){
+void wifi_manager_start(void *user_ctx){
 
 	/* disable the default wifi logging */
 	esp_log_level_set("wifi", ESP_LOG_NONE);
@@ -209,7 +209,7 @@ void wifi_manager_start(){
 	wifi_manager_shutdown_ap_timer = xTimerCreate( NULL, pdMS_TO_TICKS(WIFI_MANAGER_SHUTDOWN_AP_TIMER), pdFALSE, ( void * ) 0, wifi_manager_timer_shutdown_ap_cb);
 
 	/* start wifi manager task */
-	xTaskCreate(&wifi_manager, "wifi_manager", 4096, NULL, WIFI_MANAGER_TASK_PRIORITY, &task_wifi_manager);
+	xTaskCreate(&wifi_manager, "wifi_manager", 4096, user_ctx, WIFI_MANAGER_TASK_PRIORITY, &task_wifi_manager);
 }
 
 esp_err_t wifi_manager_save_sta_config(){
@@ -822,7 +822,7 @@ void wifi_manager_filter_unique( wifi_ap_record_t * aplist, uint16_t * aps) {
 		/* remove the identical SSID+authmodes */
 		for(int j=i+1; j<*aps;j++) {
 			wifi_ap_record_t * ap1 = &aplist[j];
-			if ( (strcmp((const char *)ap->ssid, (const char *)ap1->ssid)==0) && 
+			if ( (strcmp((const char *)ap->ssid, (const char *)ap1->ssid)==0) &&
 			     (ap->authmode == ap1->authmode) ) { /* same SSID, different auth mode is skipped */
 				/* save the rssi for the display */
 				if ((ap1->rssi) > (ap->rssi)) ap->rssi=ap1->rssi;
@@ -940,7 +940,7 @@ void wifi_manager( void * pvParameters ){
 		ap_config.ap.authmode = WIFI_AUTH_WPA2_PSK;
 		memcpy(ap_config.ap.password, wifi_settings.ap_pwd, sizeof(wifi_settings.ap_pwd));
 	}
-	
+
 
 	/* DHCP AP configuration */
 	esp_netif_dhcps_stop(esp_netif_ap); /* DHCP client/server must be stopped before setting new IP information. */
@@ -963,7 +963,7 @@ void wifi_manager( void * pvParameters ){
 	ESP_ERROR_CHECK(esp_wifi_start());
 
 	/* start http server */
-	http_app_start(false);
+	http_app_start(false, pvParameters);
 
 	/* wifi scanner config */
 	wifi_scan_config_t scan_config = {
@@ -1215,7 +1215,7 @@ void wifi_manager( void * pvParameters ){
 
 				/* restart HTTP daemon */
 				http_app_stop();
-				http_app_start(true);
+				http_app_start(true, pvParameters);
 
 				/* start DNS */
 				dns_server_start();
@@ -1244,7 +1244,7 @@ void wifi_manager( void * pvParameters ){
 
 					/* restart HTTP daemon */
 					http_app_stop();
-					http_app_start(false);
+					http_app_start(false, pvParameters);
 
 					/* callback */
 					if(cb_ptr_arr[msg.code]) (*cb_ptr_arr[msg.code])(NULL);
@@ -1254,7 +1254,7 @@ void wifi_manager( void * pvParameters ){
 
 			case WM_EVENT_STA_GOT_IP:
 				ESP_LOGI(TAG, "WM_EVENT_STA_GOT_IP");
-				ip_event_got_ip_t* ip_event_got_ip = (ip_event_got_ip_t*)msg.param; 
+				ip_event_got_ip_t* ip_event_got_ip = (ip_event_got_ip_t*)msg.param;
 				uxBits = xEventGroupGetBits(wifi_manager_event_group);
 
 				/* reset connection requests bits -- doesn't matter if it was set or not */
