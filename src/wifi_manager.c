@@ -83,7 +83,7 @@ char *ip_info_json = NULL;
 wifi_config_t* wifi_manager_config_sta = NULL;
 
 /* @brief Array of callback function pointers */
-void (**cb_ptr_arr)(void*) = NULL;
+void (**cb_ptr_arr)(void*, void*) = NULL;
 
 /* @brief tag used for ESP serial console messages */
 static const char TAG[] = "wifi_manager";
@@ -873,7 +873,7 @@ BaseType_t wifi_manager_send_message(message_code_t code, void *param){
 }
 
 
-void wifi_manager_set_callback(message_code_t message_code, void (*func_ptr)(void*) ){
+void wifi_manager_set_callback(message_code_t message_code, void (*func_ptr)(void*, void*) ){
 
 	if(cb_ptr_arr && message_code < WM_MESSAGE_CODE_COUNT){
 		cb_ptr_arr[message_code] = func_ptr;
@@ -1005,7 +1005,8 @@ void wifi_manager( void * pvParameters ){
 				}
 
 				/* callback */
-				if(cb_ptr_arr[msg.code]) (*cb_ptr_arr[msg.code])( msg.param );
+				if (cb_ptr_arr[msg.code])
+					(*cb_ptr_arr[msg.code])(msg.param, pvParameters);
 				free(evt_scan_done);
 				}
 				break;
@@ -1021,7 +1022,8 @@ void wifi_manager( void * pvParameters ){
 				}
 
 				/* callback */
-				if(cb_ptr_arr[msg.code]) (*cb_ptr_arr[msg.code])(NULL);
+				if (cb_ptr_arr[msg.code])
+					(*cb_ptr_arr[msg.code])(NULL, pvParameters);
 
 				break;
 
@@ -1038,7 +1040,8 @@ void wifi_manager( void * pvParameters ){
 				}
 
 				/* callback */
-				if(cb_ptr_arr[msg.code]) (*cb_ptr_arr[msg.code])(NULL);
+				if (cb_ptr_arr[msg.code])
+					(*cb_ptr_arr[msg.code])(NULL, pvParameters);
 
 				break;
 
@@ -1070,7 +1073,8 @@ void wifi_manager( void * pvParameters ){
 				}
 
 				/* callback */
-				if(cb_ptr_arr[msg.code]) (*cb_ptr_arr[msg.code])(NULL);
+				if (cb_ptr_arr[msg.code])
+					(*cb_ptr_arr[msg.code])(NULL, pvParameters);
 
 				break;
 
@@ -1203,7 +1207,8 @@ void wifi_manager( void * pvParameters ){
 				}
 
 				/* callback */
-				if(cb_ptr_arr[msg.code]) (*cb_ptr_arr[msg.code])( msg.param );
+				if (cb_ptr_arr[msg.code])
+					(*cb_ptr_arr[msg.code])(msg.param, pvParameters);
 				free(wifi_event_sta_disconnected);
 
 				break;
@@ -1221,7 +1226,8 @@ void wifi_manager( void * pvParameters ){
 				dns_server_start();
 
 				/* callback */
-				if(cb_ptr_arr[msg.code]) (*cb_ptr_arr[msg.code])(NULL);
+				if (cb_ptr_arr[msg.code])
+					(*cb_ptr_arr[msg.code])(NULL, pvParameters);
 
 				break;
 
@@ -1247,7 +1253,8 @@ void wifi_manager( void * pvParameters ){
 					http_app_start(false, pvParameters);
 
 					/* callback */
-					if(cb_ptr_arr[msg.code]) (*cb_ptr_arr[msg.code])(NULL);
+					if (cb_ptr_arr[msg.code])
+						(*cb_ptr_arr[msg.code])(NULL, pvParameters);
 				}
 
 				break;
@@ -1303,7 +1310,8 @@ void wifi_manager( void * pvParameters ){
 				}
 
 				/* callback and free memory allocated for the void* param */
-				if(cb_ptr_arr[msg.code]) (*cb_ptr_arr[msg.code])( msg.param );
+				if (cb_ptr_arr[msg.code])
+					(*cb_ptr_arr[msg.code])(msg.param, pvParameters);
 				free(ip_event_got_ip);
 
 				break;
@@ -1318,7 +1326,8 @@ void wifi_manager( void * pvParameters ){
 				ESP_ERROR_CHECK(esp_wifi_disconnect());
 
 				/* callback */
-				if(cb_ptr_arr[msg.code]) (*cb_ptr_arr[msg.code])(NULL);
+				if (cb_ptr_arr[msg.code])
+					(*cb_ptr_arr[msg.code])(NULL, pvParameters);
 
 				break;
 

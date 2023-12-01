@@ -404,7 +404,7 @@ void wifi_manager_safe_update_sta_ip_string(uint32_t ip);
 /**
  * @brief Register a callback to a custom function when specific event message_code happens.
  */
-void wifi_manager_set_callback(message_code_t message_code, void (*func_ptr)(void*) );
+void wifi_manager_set_callback(message_code_t message_code, void (*func_ptr)(void*, void*));
 
 
 BaseType_t wifi_manager_send_message(message_code_t code, void *param);
